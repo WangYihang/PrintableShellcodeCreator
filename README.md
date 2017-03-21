@@ -1,8 +1,0 @@
-####Printable Shellcode Creator
-```
-
-```
-####Usage : 
-```
-
-```
