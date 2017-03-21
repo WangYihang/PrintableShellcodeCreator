@@ -1,3 +1,5 @@
+Creator:Creator.c
+	gcc -o Creator Creator.c
 shellcode:shellcode.o
 	ld -o shellcode shellcode.o
 shellcode.o:shellcode.asm
