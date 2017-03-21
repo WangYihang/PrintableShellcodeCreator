@@ -60,18 +60,15 @@ void printAddESP();
 void printHex(char *shellcode);
 
 int main(int argc, char *argv[]){
-		if (argc != 3){
+		if (argc != 2){
 				showHelp(argv[0]);
 				exit(1);
 		}
 		char *filename = argv[1];
-		char *start = argv[2];
 		char shellcode[4096] = {0};
 		FILE *file = fopen(filename, "r");
 		fread(shellcode, 1, 4096, file);
 		fclose(file);
-
-		printf("[START_ASCII] : [%c]\n", *start);
 		printf("[SHELLCODE_FILE_NAME] : [%s]\n", filename);
 		printf("[SHELLCODE] : ");
 		printHex(shellcode);
@@ -252,9 +249,12 @@ unsigned char * build(char * shellcode, char start){
 
 void showHelp(char *filename){
 		printf("Usage : \n");
-		printf("\t%s [SHELLCODE_FILE_NAME] [START_ASCII]\n", filename);
+		printf("\t%s [SHELLCODE_FILE_NAME]\n", filename);
 		printf("Examples : \n");
-		printf("\t%s ./shellcode.dat A\n", filename);
+		printf("\t [Step1] : %s shellcode\n", filename);
+		printf("\t [Step2] : (Copy the output asm code to a file, I use ./printable_shellcode.asm)\n");
+		printf("\t [Step3] : make printable_shellcode\n");
+		printf("\t [Step3] : python ./exploit.py ./printable_shellcode\n");
 		printf("Note : \n");
 		printf("\tIf you have any questions, please send an email to me.(wangyihanger@gmail.com)\n");
 		printf("\tMy honor to help you with your problem.\n");

@@ -1,11 +1,9 @@
 Creator:Creator.c
 	gcc -o Creator Creator.c
-shellcode:shellcode.o
-	ld -o shellcode shellcode.o
-shellcode.o:shellcode.asm
-	nasm -f elf shellcode.asm
-encrypt:encrypt.c
-	gcc -o encrypt encrypt.c
+printable_shellcode:printable_shellcode.o
+	ld -o printable_shellcode printable_shellcode.o
+printable_shellcode.o:printable_shellcode.asm
+	nasm -f elf printable_shellcode.asm
 clean:
 	rm ./Creator
 	rm ./shellcode.o
