@@ -254,7 +254,15 @@ void showHelp(char *filename){
 		printf("\t [Step1] : %s shellcode\n", filename);
 		printf("\t [Step2] : (Copy the output asm code to a file, I use ./printable_shellcode.asm)\n");
 		printf("\t [Step3] : make printable_shellcode\n");
-		printf("\t [Step3] : python ./exploit.py ./printable_shellcode\n");
+		printf("\t [Step4] : objdump -d printable_shellcode\n");
+		printf("\t [Step5] : (Copy the binary code to a file, I use ./printable_shellcode.dat)\n");
+		printf("\t [Step6] : cat ./printable_shellcode.dat\n");
+		printf("\t [Step7] : (Copy file content)\n");
+		printf("\t [Step8] : (Use a text editor to add '\\x')\n");
+		printf("\t [Step9] : (Open python)\n");
+		printf("\t [Step10] : >>> with open(\"result\", \"w\") as f:\n");
+		printf("\t [Step11] : >>> \tf.write(\"[The  text you have just copied]\")\n");
+		printf("\t [Step12] : python ./exploit.py ./result\n");
 		printf("Note : \n");
 		printf("\tIf you have any questions, please send an email to me.(wangyihanger@gmail.com)\n");
 		printf("\tMy honor to help you with your problem.\n");
