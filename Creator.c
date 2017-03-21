@@ -243,7 +243,7 @@ unsigned char * build(char * shellcode, char start){
 				free(result);
 				target--;
 		}
-		printNOP(32);
+		printNOP(128);
 }
 
 
