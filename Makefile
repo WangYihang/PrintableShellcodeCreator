@@ -7,6 +7,6 @@ shellcode.o:shellcode.asm
 encrypt:encrypt.c
 	gcc -o encrypt encrypt.c
 clean:
+	rm ./Creator
 	rm ./shellcode.o
 	rm ./shellcode
-	rm ./encrypt
